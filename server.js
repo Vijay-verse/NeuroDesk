@@ -37,17 +37,17 @@ app.use((req, res, next) => {
 const PORT       = process.env.PORT || 5000;
 const MONGO_URI  = process.env.MONGODB_URI;
 
-// Only start the server if not running in a serverless environment like Vercel
 mongoose.connect(MONGO_URI)
   .then(() => {
     console.log('✅ MongoDB connected successfully');
-    app.listen(PORT, () => {
-      console.log(`🚀 NeuroDesk server running on port ${PORT}`);
-    });
   })
   .catch(err => {
     console.error('❌ MongoDB connection failed:', err.message);
   });
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 NeuroDesk server running on port ${PORT}`);
+});
 
 // Export the app for Vercel Serverless Functions
 module.exports = app;
