@@ -17,4 +17,13 @@ noteSchema.pre('save', function (next) {
   next();
 });
 
+noteSchema.set('toJSON', {
+  virtuals: true,
+  transform: (doc, ret) => {
+    ret.id = ret._id;
+    delete ret._id;
+    delete ret.__v;
+  }
+});
+
 module.exports = mongoose.model('Note', noteSchema);

@@ -9,4 +9,13 @@ const focusSessionSchema = new mongoose.Schema({
   date:         { type: Date, default: Date.now }
 });
 
+focusSessionSchema.set('toJSON', {
+  virtuals: true,
+  transform: (doc, ret) => {
+    ret.id = ret._id;
+    delete ret._id;
+    delete ret.__v;
+  }
+});
+
 module.exports = mongoose.model('FocusSession', focusSessionSchema);
