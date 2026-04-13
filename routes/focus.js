@@ -14,7 +14,7 @@ router.get('/', async (req, res) => {
     res.json(sessions.map(s => ({ id: s._id, ...s.toObject() })));
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server Error');
+    res.status(500).json({ error: 'Server Error' });
   }
 });
 
@@ -36,7 +36,7 @@ router.post('/', async (req, res) => {
     res.json({ id: session._id, ...session.toObject() });
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server Error');
+    res.status(500).json({ error: 'Server Error' });
   }
 });
 
@@ -60,7 +60,7 @@ router.get('/stats', async (req, res) => {
     res.json(stats);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server Error');
+    res.status(500).json({ error: 'Server Error' });
   }
 });
 
