@@ -41,11 +41,9 @@ const MONGO_URI  = process.env.MONGODB_URI;
 mongoose.connect(MONGO_URI)
   .then(() => {
     console.log('✅ MongoDB connected successfully');
-    if (process.env.NODE_ENV !== 'production') {
-      app.listen(PORT, () => {
-        console.log(`🚀 NeuroDesk server running at http://localhost:${PORT}`);
-      });
-    }
+    app.listen(PORT, () => {
+      console.log(`🚀 NeuroDesk server running on port ${PORT}`);
+    });
   })
   .catch(err => {
     console.error('❌ MongoDB connection failed:', err.message);

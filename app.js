@@ -20,7 +20,7 @@ const STORE = {
 
 // API Layer
 const API = {
-  BASE: '/api',
+  BASE: 'https://neurodesk-production-4355.up.railway.app/api',
   token: () => localStorage.getItem('neurodesk_token'),
   headers: () => ({
     'Content-Type': 'application/json',
