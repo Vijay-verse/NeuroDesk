@@ -37,20 +37,19 @@ app.use((req, res, next) => {
 const PORT       = process.env.PORT || 5000;
 const MONGO_URI  = process.env.MONGODB_URI;
 
+// Only start the server if not running in a serverless environment like Vercel
 mongoose.connect(MONGO_URI)
   .then(() => {
     console.log('✅ MongoDB connected successfully');
-    app.listen(PORT, () => {
-      console.log(`🚀 NeuroDesk server running at http://localhost:${PORT}`);
-    });
+    if (process.env.NODE_ENV !== 'production') {
+      app.listen(PORT, () => {
+        console.log(`🚀 NeuroDesk server running at http://localhost:${PORT}`);
+      });
+    }
   })
   .catch(err => {
     console.error('❌ MongoDB connection failed:', err.message);
-    console.error('   Check your MONGODB_URI in .env file');
-    process.exit(1);
   });
 
-// ── Handle unhandled promise rejections ──────────────────────
-process.on('unhandledRejection', (err) => {
-  console.error('Unhandled Rejection:', err.message);
-});
+// Export the app for Vercel Serverless Functions
+module.exports = app;

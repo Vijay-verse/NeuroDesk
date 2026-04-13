@@ -20,7 +20,7 @@ const STORE = {
 
 // API Layer
 const API = {
-  BASE: 'http://localhost:5000/api',
+  BASE: '/api',
   token: () => localStorage.getItem('neurodesk_token'),
   headers: () => ({
     'Content-Type': 'application/json',
