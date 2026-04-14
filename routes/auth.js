@@ -23,7 +23,7 @@ router.post('/register', async (req, res) => {
     res.json({ token, user: { name: user.name, username: user.username, goal: user.goal } });
   } catch (err) {
     console.error(err.message);
-    res.status(500).json({ error: 'Server Error' });
+    res.status(500).json({ error: `Server Error: ${err.message}` });
   }
 });
 
@@ -48,7 +48,7 @@ router.post('/login', async (req, res) => {
     res.json({ token, user: { name: user.name, username: user.username, goal: user.goal } });
   } catch (err) {
     console.error(err.message);
-    res.status(500).json({ error: 'Server Error' });
+    res.status(500).json({ error: `Server Error: ${err.message}` });
   }
 });
 
@@ -60,7 +60,7 @@ router.get('/me', auth, async (req, res) => {
     res.json(user);
   } catch (err) {
     console.error(err.message);
-    res.status(500).json({ error: 'Server Error' });
+    res.status(500).json({ error: `Server Error: ${err.message}` });
   }
 });
 
@@ -78,7 +78,7 @@ router.patch('/me', auth, async (req, res) => {
     res.json(user);
   } catch (err) {
     console.error(err.message);
-    res.status(500).json({ error: 'Server Error' });
+    res.status(500).json({ error: `Server Error: ${err.message}` });
   }
 });
 

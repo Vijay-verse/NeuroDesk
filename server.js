@@ -31,6 +31,16 @@ app.use('/api/tasks',   require('./routes/tasks'));
 app.use('/api/journal', require('./routes/journal'));
 app.use('/api/focus',   require('./routes/focus'));
 
+// ── Health Check ───────────────────────────────────────────
+app.get('/api/health', (req, res) => {
+  const states = ['Disconnected', 'Connected', 'Connecting', 'Disconnecting'];
+  res.json({ 
+    status: states[mongoose.connection.readyState],
+    dbName: mongoose.connection.name,
+    timestamp: new Date().toISOString()
+  });
+});
+
 // ── Fallback → serve index.html for SPA ─────────────────────
 app.use((req, res, next) => {
   if (!req.path.startsWith('/api')) {

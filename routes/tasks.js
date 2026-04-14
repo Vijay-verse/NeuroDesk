@@ -13,7 +13,7 @@ router.get('/', async (req, res) => {
     res.json(tasks.map(t => ({ id: t._id, ...t.toObject() })));
   } catch (err) {
     console.error(err.message);
-    res.status(500).json({ error: 'Server Error' });
+    res.status(500).json({ error: `Server Error: ${err.message}` });
   }
 });
 
@@ -35,7 +35,7 @@ router.post('/', async (req, res) => {
     res.json({ id: task._id, ...task.toObject() });
   } catch (err) {
     console.error(err.message);
-    res.status(500).json({ error: 'Server Error' });
+    res.status(500).json({ error: `Server Error: ${err.message}` });
   }
 });
 
@@ -60,7 +60,7 @@ router.patch('/:id', async (req, res) => {
   } catch (err) {
     console.error(err.message);
     if (err.kind === 'ObjectId') return res.status(404).json({ error: 'Task not found' });
-    res.status(500).json({ error: 'Server Error' });
+    res.status(500).json({ error: `Server Error: ${err.message}` });
   }
 });
 
@@ -78,7 +78,7 @@ router.delete('/:id', async (req, res) => {
   } catch (err) {
     console.error(err.message);
     if (err.kind === 'ObjectId') return res.status(404).json({ error: 'Task not found' });
-    res.status(500).json({ error: 'Server Error' });
+    res.status(500).json({ error: `Server Error: ${err.message}` });
   }
 });
 
