@@ -47,19 +47,20 @@ app.use((req, res, next) => {
 const PORT       = process.env.PORT || 5000;
 const MONGO_URI  = process.env.MONGODB_URI;
 
-mongoose.connect(MONGO_URI, {
-  serverSelectionTimeoutMS: 5000 // Timeout after 5s instead of 30s
-})
-  .then(() => {
-    console.log('✅ MongoDB connected successfully');
+if (MONGO_URI) {
+  mongoose.connect(MONGO_URI, {
+    serverSelectionTimeoutMS: 5000 
   })
-  .catch(err => {
-    console.error('❌ MongoDB connection failed:', err.message);
-  });
+    .then(() => console.log('✅ MongoDB connected successfully'))
+    .catch(err => console.error('❌ MongoDB connection failed:', err.message));
+}
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 NeuroDesk server running on port ${PORT}`);
-});
+// Only listen if not running in a serverless environment (Vercel)
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 NeuroDesk server running on port ${PORT}`);
+  });
+}
 
 // Export the app for Vercel Serverless Functions
 module.exports = app;
