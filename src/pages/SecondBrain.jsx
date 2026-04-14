@@ -46,14 +46,19 @@ const SecondBrain = () => {
           tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean)
         })
       });
+      
+      const data = await res.json();
       if (res.ok) {
         setIsModalOpen(false);
         setEditingNote(null);
         setFormData({ title: '', content: '', tags: '', color: 'purple' });
         fetchNotes();
+      } else {
+        alert(data.error || 'The brain is fogged. Unable to save this note.');
       }
     } catch (err) {
       console.error('Failed to save note');
+      alert('The neural connection was lost. Check your internet.');
     }
   };
 

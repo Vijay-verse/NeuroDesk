@@ -38,12 +38,17 @@ const StudyPlanner = () => {
         },
         body: JSON.stringify(formData)
       });
+      
+      const data = await res.json();
       if (res.ok) {
         setFormData({ subject: '', title: '', date: '', priority: 'medium' });
         fetchTasks();
+      } else {
+        alert(data.error || 'Unable to schedule this task. Try again.');
       }
     } catch (err) {
       console.error('Failed to add task');
+      alert('Plan interrupted. Check your server connection.');
     }
   };
 

@@ -37,6 +37,9 @@ const MindTrace = () => {
   const handleSave = async () => {
     try {
       const token = localStorage.getItem('neurodesk_token');
+      // Find emoji from MOODS
+      const moodInfo = MOODS.find(m => m.id === selectedMood);
+      
       const res = await fetch('/api/journal', {
         method: 'POST',
         headers: { 
@@ -45,19 +48,25 @@ const MindTrace = () => {
         },
         body: JSON.stringify({
           mood: selectedMood,
+          moodEmoji: moodInfo?.emoji || '😐',
           wins,
           content,
           energy
         })
       });
+
+      const data = await res.json();
       if (res.ok) {
         setWins('');
         setContent('');
         setEnergy(5);
         fetchEntries();
+      } else {
+        alert(data.error || 'Failed to preserve your thought. Try again.');
       }
     } catch (err) {
       console.error('Failed to save entry');
+      alert('Connection lost. Please check your internet or server status.');
     }
   };
 
