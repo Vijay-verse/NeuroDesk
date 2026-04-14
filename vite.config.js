@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'https://neurodesk-production-4355.up.railway.app',
         changeOrigin: true,
       },
     },
