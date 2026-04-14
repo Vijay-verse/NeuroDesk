@@ -14,6 +14,27 @@ const App = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [isSidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
 
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (!token) return;
+      try {
+        const response = await fetch('/api/auth/me', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const userData = await response.json();
+          setUser(userData);
+        } else {
+          // Token invalid or expired
+          logout();
+        }
+      } catch (err) {
+        console.error('Session restoration failed');
+      }
+    };
+    fetchUser();
+  }, [token]);
+
   const handleLogin = (userData, userToken) => {
     setUser(userData);
     setToken(userToken);

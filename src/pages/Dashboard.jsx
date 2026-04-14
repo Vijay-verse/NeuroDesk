@@ -45,15 +45,17 @@ const Dashboard = ({ user }) => {
           fetch('/api/focus/stats', { headers }).then(r => r.json())
         ]);
 
-        if (statsRes) {
+        if (statsRes && typeof statsRes.totalSeconds === 'number') {
           const h = Math.floor(statsRes.totalSeconds / 3600);
           const m = Math.floor((statsRes.totalSeconds % 3600) / 60);
           setStats({
             studyTime: `${h}h ${m}m`,
             focusScore: statsRes.totalScore || 0,
             streak: statsRes.streak || 0,
-            notesCount: notesRes?.length || 0
+            notesCount: Array.isArray(notesRes) ? notesRes.length : 0
           });
+        } else if (notesRes) {
+          setStats(prev => ({ ...prev, notesCount: Array.isArray(notesRes) ? notesRes.length : 0 }));
         }
       } catch (err) {
         console.error('Failed to load dashboard data');

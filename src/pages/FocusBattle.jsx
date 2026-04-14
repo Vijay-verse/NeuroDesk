@@ -22,6 +22,7 @@ const FocusBattle = () => {
 
   const startTimer = () => {
     setIsRunning(true);
+    if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
       setSecondsLeft(prev => {
         if (prev <= 1) {
