@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send } from 'lucide-react';
 
-const GEMINI_API_KEY = 'AIzaSyDpIYvhDBXO66riImm0vnRzfh_inRxVbq4';
+const GEMINI_API_KEY = 'AIzaSyDN0LjgYix-kG49UVm9yw4NEmdYSCdkeu8';
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 const SYSTEM_PROMPT = `You are NeuroDesk AI — a premium, intelligent study assistant built into the NeuroDesk productivity platform.
