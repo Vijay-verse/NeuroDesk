@@ -1,17 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send } from 'lucide-react';
 
-const GEMINI_API_KEY = 'AIzaSyDN0LjgYix-kG49UVm9yw4NEmdYSCdkeu8';
+const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY || '';
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 // Fallback chain: try models in order until one works
-const GEMINI_MODELS = [
-  'gemini-1.5-flash',
-  'gemini-2.0-flash-lite',
-  'gemini-2.0-flash',
+const GROQ_MODELS = [
+  'llama-3.3-70b-versatile',
+  'llama-3.1-8b-instant',
+  'gemma2-9b-it',
 ];
-
-const buildGeminiUrl = (model) =>
-  `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
 
 const SYSTEM_PROMPT = `You are NeuroDesk AI — a premium, intelligent study assistant built into the NeuroDesk productivity platform.
 
@@ -109,11 +107,11 @@ const AIAssistant = ({ addToast }) => {
     if (textareaRef.current) textareaRef.current.style.height = 'auto';
 
     try {
-      const aiResponse = await callGemini(updatedMessages);
+      const aiResponse = await callGroq(updatedMessages);
       const assistantMsg = { role: 'assistant', content: aiResponse, timestamp: Date.now() };
       setMessages(prev => [...prev, assistantMsg]);
     } catch (err) {
-      console.warn('Gemini API unavailable, using local fallback:', err.message);
+      console.warn('Groq API unavailable, using local fallback:', err.message);
       // Fallback to local responses instead of showing error
       const fallbackResponse = getLocalResponse(content);
       const assistantMsg = { role: 'assistant', content: fallbackResponse, timestamp: Date.now() };
@@ -124,46 +122,47 @@ const AIAssistant = ({ addToast }) => {
     }
   };
 
-  // Gemini API call — tries multiple models in fallback chain
-  const callGemini = async (conversationMessages) => {
+  // Groq API call — tries multiple models in fallback chain
+  const callGroq = async (conversationMessages) => {
     const recentMessages = conversationMessages.slice(-20);
 
-    const contents = recentMessages.map(m => ({
-      role: m.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: m.content }]
-    }));
-
-    const requestBody = JSON.stringify({
-      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-      contents,
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 1024,
-        topP: 0.95,
-        topK: 40
-      }
-    });
+    const apiMessages = [
+      { role: 'system', content: SYSTEM_PROMPT },
+      ...recentMessages.map(m => ({
+        role: m.role,
+        content: m.content
+      }))
+    ];
 
     // Try each model in the fallback chain
     let lastError = null;
-    for (const model of GEMINI_MODELS) {
+    for (const model of GROQ_MODELS) {
       try {
-        const response = await fetch(buildGeminiUrl(model), {
+        const response = await fetch(GROQ_API_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: requestBody
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${GROQ_API_KEY}`
+          },
+          body: JSON.stringify({
+            model,
+            messages: apiMessages,
+            temperature: 0.7,
+            max_tokens: 1024,
+            stream: false
+          })
         });
 
         if (response.ok) {
           const data = await response.json();
-          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          const text = data.choices?.[0]?.message?.content;
           if (text) return text;
         }
 
-        // If quota/rate error, try next model
+        // If rate limit or model error, try next model
         const errData = await response.json().catch(() => ({}));
         lastError = errData.error?.message || `${model}: HTTP ${response.status}`;
-        console.warn(`Gemini ${model} failed:`, lastError);
+        console.warn(`Groq ${model} failed:`, lastError);
         continue;
       } catch (e) {
         lastError = e.message;
@@ -171,7 +170,7 @@ const AIAssistant = ({ addToast }) => {
       }
     }
 
-    throw new Error(lastError || 'All Gemini models unavailable');
+    throw new Error(lastError || 'All Groq models unavailable');
   };
 
   // Render markdown-formatted text
@@ -337,7 +336,7 @@ const AIAssistant = ({ addToast }) => {
       <div className="page-header">
         <div>
           <h1 className="page-title">AI Assistant 🤖</h1>
-          <p className="page-subtitle">Powered by Gemini AI — your intelligent study companion.</p>
+          <p className="page-subtitle">Powered by Groq AI — your intelligent study companion.</p>
         </div>
         {messages.length > 0 && (
           <button className="btn-secondary btn-sm" onClick={clearChat}>Clear Chat</button>
@@ -349,7 +348,7 @@ const AIAssistant = ({ addToast }) => {
           <div className="ai-empty-state">
             <div className="empty-icon">🧠</div>
             <h2>How can I help you today?</h2>
-            <p>Ask me anything about studying, productivity, any subject, or learning techniques. Powered by Gemini AI.</p>
+            <p>Ask me anything about studying, productivity, any subject, or learning techniques. Powered by Groq AI.</p>
             <div className="ai-suggestions">
               {SUGGESTIONS.map((s, i) => (
                 <button key={i} className="ai-suggestion" onClick={() => sendMessage(s)}>
