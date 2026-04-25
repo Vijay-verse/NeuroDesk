@@ -1,34 +1,52 @@
-# 🧠 NeuroDesk – Smart Study & Mind Intelligence System
+# 🧠 NeuroDesk – Premium Study & Mind Intelligence System
 
-**NeuroDesk** is a premium, high-performance productivity suite designed to help you focus deeper, think clearer, and achieve more. Built with a modern React architecture and a futuristic glassmorphism aesthetic, it transforms your study habits into a supercharged intelligence journey.
+**NeuroDesk** is a premium, high-performance productivity suite designed to help you focus deeper, think clearer, and achieve more. Built with a modern React architecture and a luxurious glassmorphism aesthetic, it turns your daily productivity into a habit-forming, supercharged intelligence journey.
 
 ![NeuroDesk Banner](https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80)
 
 ## ⚡ Core Features
 
-### ⚔️ Focus Battle
-Enter the zone with our advanced Pomodoro system. 
-- **Distraction Tracker**: Log and avoid distractions in real-time.
-- **Focus Rings**: Visual progress tracking with animated circular timers.
-- **Session Goals**: Set and hit daily focus targets.
+### 🎨 Advanced Theme Engine
+- **Three Modes**: Switch effortlessly between **Dark** (deep space), **Light** (clean minimal), and **Purple** (lavender gradient) themes.
+- **Glassmorphism**: Premium frosted-glass UI with smooth 0.5s CSS variable transitions.
 
-### 🧠 Journal
+### 📊 Smart Dashboard
+Your daily command center for total accountability.
+- **Dynamic Greeting**: Time-aware greetings and real-time clock.
+- **Quick Tasks & Mood**: Manage immediate todos and log your daily emotional state.
+- **Activity Feed**: View focus history and quick notes at a glance.
+
+### ⚔️ Gamified Focus Battle
+Enter the zone with our advanced Pomodoro system designed to build habits.
+- **XP & Levels**: Earn XP for focusing and level up your mind intelligence.
+- **Achievements**: Unlock 12 beautifully designed badges based on your performance.
+- **Distraction Tracker**: Tab-switch detection penalizes XP to keep you accountable.
+- **Streaks**: Build and maintain your daily 🔥 focus streak.
+
+### 🧠 Journal (Second Brain)
 Capture and connect your ideas in a modular knowledge environment.
-- **Linked Notes**: Organize thoughts with dual-tagging and color-coding.
-- **Knowledge Visualization**: (Coming Soon) Interactive graph view of your mental connections.
-- **Fast Search**: Instant retrieval of your captured insights.
+- **Linked Notes**: Organize thoughts with dual-tagging and responsive filtering.
+- **Instant Search**: Find any insight instantly across your knowledge base.
+- **Offline First**: Robust `localStorage` fallback ensures you never lose a note.
 
-### 🌊 MindTrace
-Track your emotional landscape and mental energy.
-- **Mood Journaling**: Quick daily logs with emoji-based expression.
-- **Energy Analytics**: Monitor your "batteries" to avoid burnout.
-- **Reflection History**: Review your journey to build deeper self-awareness.
+### 📈 Deep Analytics
+Visualize your growth and stay accountable to your goals.
+- **Interactive Charts**: Daily focus time (Bar) and weekly progression (Line) charts.
+- **Performance Metrics**: View averages, totals, and XP milestones.
+- **Streak Calendar**: GitHub-style 28-day contribution grid.
 
-### 📅 Study Planner
-Manage your subjects and deadlines with algorithmic precision.
-- **Task Management**: Prioritize assignments (High/Medium/Low).
-- **Subject Grouping**: Stay organized across multiple fields of study.
-- **Progress Badges**: Real-time completion rates for your study tasks.
+### 🤖 AI Assistant
+Your intelligent on-demand study companion.
+- **Smart Local Responses**: Built-in intelligence for study tips, Pomodoro execution, and handling burnout.
+- **Interactive Chat**: ChatGPT-like UI with typing indicators and persistent message history.
+- **Extensible**: Ready to plug into any OpenAI-compatible API.
+
+### 🧰 Productivity Utilities
+All your tools in one unified dashboard.
+- **To-Do List**: Priority-based task tracking with completion states.
+- **Mini Calendar**: Quick month-at-a-glance navigation.
+- **Live Weather**: Geolocation-based real-time weather from wttr.in.
+- **Sticky Notes**: Color-coded quick scrappads.
 
 ---
 
@@ -37,9 +55,10 @@ Manage your subjects and deadlines with algorithmic precision.
 NeuroDesk leverages the latest web technologies for a smooth, premium experience:
 
 - **Frontend**: [React 19](https://reactjs.org/) + [Vite](https://vitejs.dev/)
-- **Styling**: Vanilla CSS with **Glassmorphism** & CSS Variables
+- **Styling**: Vanilla CSS with **Glassmorphism** & advanced CSS Variables
 - **Animations**: [Framer Motion](https://www.framer.com/motion/) & [Lucide React](https://lucide.dev/) icons
 - **Data Viz**: [Chart.js](https://www.chartjs.org/) & [react-chartjs-2](https://react-chartjs-2.js.org/)
+- **Data Persistence**: Robust `localStorage` caching with backend sync capabilities
 - **Backend**: [Node.js](https://nodejs.org/) & [Express](https://expressjs.com/)
 - **Database**: [MongoDB](https://www.mongodb.com/) with Mongoose ODM
 
@@ -50,8 +69,8 @@ NeuroDesk leverages the latest web technologies for a smooth, premium experience
 NeuroDesk uses a high-performance **decoupled deployment**:
 
 - **Frontend**: Hosted on [Vercel](https://vercel.com/) for lightning-fast Edge delivery.
-- **Backend**: Hosted on [Railway](https://railway.app/) for reliable persistent data handling.
-- **Redirection**: Vercel acts as a transparent proxy, forwarding `/api` traffic directly to the Railway production backend.
+- **Backend / Sync**: Hosted on [Railway](https://railway.app/) for reliable persistent data handling.
+- **Redirection**: Vercel acts as a transparent proxy, forwarding API traffic directly to the Railway production backend.
 
 ---
 
@@ -88,11 +107,6 @@ NeuroDesk uses a high-performance **decoupled deployment**:
 
 5.  **Visit App**:
     The app will be running at `http://localhost:5173/`.
-
----
-
-## 🎨 Visual Identity
-NeuroDesk features a sleek **Dark Mode** by default, utilizing a palette of deep purples, cyan-slates, and vibrant gradients. The interface is built on a glassmorphism design system that emphasizes depth, clarity, and focus.
 
 ---
 
