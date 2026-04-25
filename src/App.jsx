@@ -18,6 +18,19 @@ const App = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
   const [theme, setTheme] = useState(localStorage.getItem('neurodesk_theme') || 'dark');
   const [toasts, setToasts] = useState([]);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  // Online / Offline detection
+  useEffect(() => {
+    const goOnline = () => { setIsOnline(true); addToast('You are back online!', 'success'); };
+    const goOffline = () => { setIsOnline(false); };
+    window.addEventListener('online', goOnline);
+    window.addEventListener('offline', goOffline);
+    return () => {
+      window.removeEventListener('online', goOnline);
+      window.removeEventListener('offline', goOffline);
+    };
+  }, []);
 
   // Apply theme to DOM
   useEffect(() => {
@@ -164,6 +177,13 @@ const App = () => {
       <main className="main-content" style={{ marginLeft: isSidebarOpen && window.innerWidth > 768 ? '260px' : '0' }}>
         {renderPage()}
       </main>
+
+      {/* Offline banner */}
+      {!isOnline && (
+        <div className="offline-banner">
+          📡 You are offline — NeuroDesk is running in offline mode. Your data is saved locally.
+        </div>
+      )}
 
       {/* Toast notifications */}
       {toasts.length > 0 && (

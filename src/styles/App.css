@@ -2247,3 +2247,36 @@ textarea { resize: vertical; min-height: 100px; }
 @media (max-width: 768px) {
   .sidebar-overlay.active { display: block; }
 }
+
+/* === OFFLINE BANNER === */
+.offline-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #1a1a1a;
+  text-align: center;
+  padding: 10px 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: var(--font-primary);
+  animation: slideUpBanner 0.4s ease-out;
+  box-shadow: 0 -4px 20px rgba(245, 158, 11, 0.3);
+}
+@keyframes slideUpBanner {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* === PWA STANDALONE — remove browser chrome padding === */
+@media (display-mode: standalone) {
+  body {
+    -webkit-user-select: none;
+    user-select: auto;
+  }
+  .topbar {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "name": "NeuroDesk – Smart Study & Mind Intelligence",
+  "short_name": "NeuroDesk",
+  "description": "Premium AI-powered study and mind intelligence system. Focus deeper, think clearer, achieve more.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a1a",
+  "theme_color": "#7c3aed",
+  "orientation": "any",
+  "categories": ["productivity", "education", "utilities"],
+  "icons": [
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Focus Battle",
+      "short_name": "Focus",
+      "url": "/",
+      "description": "Start a focus session"
+    },
+    {
+      "name": "Journal",
+      "short_name": "Journal",
+      "url": "/",
+      "description": "Open your journal"
+    }
+  ]
+}
