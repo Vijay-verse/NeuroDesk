@@ -5,7 +5,7 @@ const Sidebar = ({ isOpen, setIsOpen, currentPage, setCurrentPage }) => {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutGrid size={20} /> },
     { id: 'focus', label: 'Focus Battle', icon: <Target size={20} /> },
-    { id: 'brain', label: 'Second Brain', icon: <Brain size={20} /> },
+    { id: 'brain', label: 'Journal', icon: <Brain size={20} /> },
     { id: 'mindtrace', label: 'MindTrace', icon: <Waves size={20} /> },
     { id: 'planner', label: 'Study Planner', icon: <Calendar size={20} /> },
   ];

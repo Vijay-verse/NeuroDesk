@@ -95,7 +95,7 @@ const SecondBrain = () => {
     <section className="page active">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Second Brain 🧠</h1>
+          <h1 className="page-title">Journal 🧠</h1>
           <p className="page-subtitle">Capture everything. Connect your ideas. Build your knowledge graph.</p>
         </div>
         <button className="btn-primary" onClick={() => { setEditingNote(null); setIsModalOpen(true); }}>
@@ -148,7 +148,7 @@ const SecondBrain = () => {
         )) : (
           <div className="notes-empty">
             <div className="empty-icon">🧠</div>
-            <p>Your second brain is empty.</p>
+            <p>Your journal is empty.</p>
             <p className="empty-sub">Start capturing thoughts, ideas, and insights!</p>
           </div>
         )}

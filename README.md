@@ -12,7 +12,7 @@ Enter the zone with our advanced Pomodoro system.
 - **Focus Rings**: Visual progress tracking with animated circular timers.
 - **Session Goals**: Set and hit daily focus targets.
 
-### 🧠 Second Brain
+### 🧠 Journal
 Capture and connect your ideas in a modular knowledge environment.
 - **Linked Notes**: Organize thoughts with dual-tagging and color-coding.
 - **Knowledge Visualization**: (Coming Soon) Interactive graph view of your mental connections.

@@ -12,9 +12,8 @@ const noteSchema = new mongoose.Schema({
 });
 
 // Auto-update updatedAt on save
-noteSchema.pre('save', function (next) {
+noteSchema.pre('save', function () {
   this.updatedAt = new Date();
-  next();
 });
 
 noteSchema.set('toJSON', {

@@ -7,7 +7,7 @@ const Topbar = ({ user, logout, toggleSidebar, currentPage }) => {
   const navLabels = {
     dashboard: 'Dashboard',
     focus: 'Focus Battle',
-    brain: 'Second Brain',
+    brain: 'Journal',
     mindtrace: 'MindTrace',
     planner: 'Study Planner'
   };

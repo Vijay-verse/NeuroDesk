@@ -80,7 +80,7 @@ const Auth = ({ onLogin }) => {
             <div className="auth-feature-item">
               <span className="auth-feat-icon">🧠</span>
               <div>
-                <div className="auth-feat-title">Second Brain</div>
+                <div className="auth-feat-title">Journal</div>
                 <div className="auth-feat-desc">Linked note system with knowledge graph</div>
               </div>
             </div>
