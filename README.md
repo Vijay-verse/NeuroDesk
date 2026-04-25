@@ -35,11 +35,12 @@ Visualize your growth and stay accountable to your goals.
 - **Performance Metrics**: View averages, totals, and XP milestones.
 - **Streak Calendar**: GitHub-style 28-day contribution grid.
 
-### 🤖 AI Assistant
-Your intelligent on-demand study companion.
-- **Smart Local Responses**: Built-in intelligence for study tips, Pomodoro execution, and handling burnout.
-- **Interactive Chat**: ChatGPT-like UI with typing indicators and persistent message history.
-- **Extensible**: Ready to plug into any OpenAI-compatible API.
+### 🤖 AI Assistant (Powered by Groq)
+Your lightning-fast, intelligent on-demand study companion.
+- **Groq API**: Powered by Llama 3.3 70B via Groq for ultra-low latency inference.
+- **Model Fallback Chain**: Automatically shifts to secondary models (Llama 3.1 8B, Gemma 2 9B) to guarantee uptime.
+- **Smart Offline Support**: If the API is unreachable (or in PWA offline mode), instantly switches to a built-in encyclopedia of study techniques and Pomodoro tips.
+- **Interactive Chat**: ChatGPT-like UI with markdown rendering and persistent message history.
 
 ### 🧰 Productivity Utilities
 All your tools in one unified dashboard.
@@ -47,6 +48,12 @@ All your tools in one unified dashboard.
 - **Mini Calendar**: Quick month-at-a-glance navigation.
 - **Live Weather**: Geolocation-based real-time weather from wttr.in.
 - **Sticky Notes**: Color-coded quick scrappads.
+
+### 📱 Progressive Web App (PWA)
+NeuroDesk is a fully installable app that works anywhere.
+- **Installable**: Install directly to your desktop or mobile home screen natively from the browser.
+- **Offline Mode**: A custom Service Worker caches the app shell. You can view the dashboard, log journal entries, and track focus sessions completely offline. Data syncs locally.
+- **Connection Awareness**: Beautiful UI banners instantly notify you when your network drops or reconnects.
 
 ---
 
@@ -58,6 +65,8 @@ NeuroDesk leverages the latest web technologies for a smooth, premium experience
 - **Styling**: Vanilla CSS with **Glassmorphism** & advanced CSS Variables
 - **Animations**: [Framer Motion](https://www.framer.com/motion/) & [Lucide React](https://lucide.dev/) icons
 - **Data Viz**: [Chart.js](https://www.chartjs.org/) & [react-chartjs-2](https://react-chartjs-2.js.org/)
+- **AI Integration**: [Groq API](https://groq.com/) (Llama 3.3 70B)
+- **Offline & Desktop**: Progressive Web App (PWA) via Service Workers
 - **Data Persistence**: Robust `localStorage` caching with backend sync capabilities
 - **Backend**: [Node.js](https://nodejs.org/) & [Express](https://expressjs.com/)
 - **Database**: [MongoDB](https://www.mongodb.com/) with Mongoose ODM
@@ -98,6 +107,7 @@ NeuroDesk uses a high-performance **decoupled deployment**:
     MONGODB_URI=your_mongodb_connection_string
     JWT_SECRET=your_super_secret_key
     PORT=5000
+    VITE_GROQ_API_KEY=your_groq_api_key_here
     ```
 
 4.  **Run Development Environment**:
