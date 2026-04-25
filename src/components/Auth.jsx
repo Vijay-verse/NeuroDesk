@@ -11,6 +11,12 @@ const Auth = ({ onLogin }) => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const switchTab = (tab) => {
+    setActiveTab(tab);
+    setError('');
+    setFormData({ username: '', password: '', name: '', goal: 120 });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -92,13 +98,13 @@ const Auth = ({ onLogin }) => {
             <div className="auth-tabs">
               <button 
                 className={`auth-tab ${activeTab === 'login' ? 'active' : ''}`}
-                onClick={() => setActiveTab('login')}
+                onClick={() => switchTab('login')}
               >
                 Sign In
               </button>
               <button 
                 className={`auth-tab ${activeTab === 'signup' ? 'active' : ''}`}
-                onClick={() => setActiveTab('signup')}
+                onClick={() => switchTab('signup')}
               >
                 Sign Up
               </button>
@@ -122,6 +128,7 @@ const Auth = ({ onLogin }) => {
                       <input 
                         type="text" id="signup-name" className="auth-input" 
                         placeholder="Your full name" required 
+                        value={formData.name}
                         onChange={handleInputChange}
                       />
                     </div>
@@ -134,6 +141,7 @@ const Auth = ({ onLogin }) => {
                     <input 
                       type="text" id={`${activeTab}-username`} className="auth-input" 
                       placeholder="Enter your username" required 
+                      value={formData.username}
                       onChange={handleInputChange}
                     />
                   </div>
@@ -145,6 +153,7 @@ const Auth = ({ onLogin }) => {
                     <input 
                       type="password" id={`${activeTab}-password`} className="auth-input" 
                       placeholder="Enter your password" required 
+                      value={formData.password}
                       onChange={handleInputChange}
                     />
                   </div>
@@ -156,7 +165,7 @@ const Auth = ({ onLogin }) => {
                     <div className="auth-input-wrap">
                       <input 
                         type="number" id="signup-goal" className="auth-input" 
-                        placeholder="e.g. 120" defaultValue="120"
+                        placeholder="e.g. 120" value={formData.goal}
                         onChange={handleInputChange}
                       />
                     </div>
