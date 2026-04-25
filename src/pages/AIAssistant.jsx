@@ -1,6 +1,39 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send } from 'lucide-react';
 
+const DEEPSEEK_API_KEY = 'sk-7d47b55e1bc84a069ed23c348e05ab79';
+const DEEPSEEK_API_URL = 'https://api.deepseek.com/chat/completions';
+
+const SYSTEM_PROMPT = `You are NeuroDesk AI — a premium, intelligent study assistant built into the NeuroDesk productivity platform.
+
+Your personality: Friendly, encouraging, knowledgeable, and concise. You use emojis sparingly for warmth.
+
+Your expertise:
+- Study techniques (Pomodoro, active recall, spaced repetition, Feynman technique)
+- Focus and concentration strategies
+- Memory improvement methods
+- Study planning and time management
+- Dealing with procrastination and burnout
+- Academic subjects (math, science, history, programming, etc.)
+- Productivity habits and goal setting
+- Mental health and wellbeing for students
+
+NeuroDesk features you can reference:
+- **Focus Battle**: Gamified Pomodoro timer with XP, levels, streaks, and distraction tracking
+- **Journal**: Note-taking system with tags and search
+- **Analytics**: Charts showing focus history, streaks, and XP milestones
+- **Study Planner**: Task management with priorities and deadlines
+- **MindTrace**: Mood and energy journaling
+- **Utilities**: Todo list, calendar, sticky notes
+
+Guidelines:
+- Keep responses concise but helpful (aim for 100-300 words)
+- Use markdown formatting: **bold**, bullet points, numbered lists
+- When relevant, suggest using NeuroDesk features
+- Be encouraging and supportive
+- If asked about non-study topics, still help but gently steer back to productivity
+- You can help with any academic subject — explain concepts clearly`;
+
 const SUGGESTIONS = [
   "Explain the Pomodoro technique",
   "Give me 5 study tips for exams",
@@ -36,7 +69,8 @@ const AIAssistant = ({ addToast }) => {
 
     setError(null);
     const userMsg = { role: 'user', content, timestamp: Date.now() };
-    setMessages(prev => [...prev, userMsg]);
+    const updatedMessages = [...messages, userMsg];
+    setMessages(updatedMessages);
     setInput('');
     setIsLoading(true);
 
@@ -44,53 +78,194 @@ const AIAssistant = ({ addToast }) => {
     if (textareaRef.current) textareaRef.current.style.height = 'auto';
 
     try {
-      // Try to call AI API — for now, use a smart local response system
-      // You can replace this with your own API endpoint
-      const aiResponse = await generateLocalResponse(content);
-
+      const aiResponse = await callDeepSeek(updatedMessages);
       const assistantMsg = { role: 'assistant', content: aiResponse, timestamp: Date.now() };
       setMessages(prev => [...prev, assistantMsg]);
     } catch (err) {
-      setError('Failed to get response. Please try again.');
+      console.error('DeepSeek API error:', err);
+      setError(err.message || 'Failed to get response. Please try again.');
       if (addToast) addToast('AI response failed', 'error');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Smart local response system (replace with API call when ready)
-  const generateLocalResponse = async (query) => {
-    // Simulate network delay
-    await new Promise(r => setTimeout(r, 800 + Math.random() * 1200));
+  // DeepSeek API call with full conversation history
+  const callDeepSeek = async (conversationMessages) => {
+    // Build messages array for the API — include last 20 messages for context
+    const recentMessages = conversationMessages.slice(-20);
+    const apiMessages = [
+      { role: 'system', content: SYSTEM_PROMPT },
+      ...recentMessages.map(m => ({
+        role: m.role,
+        content: m.content
+      }))
+    ];
 
-    const q = query.toLowerCase();
+    const response = await fetch(DEEPSEEK_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: apiMessages,
+        temperature: 0.7,
+        max_tokens: 1024,
+        stream: false
+      })
+    });
 
-    if (q.includes('pomodoro')) {
-      return "**The Pomodoro Technique** is a time management method:\n\n1. 🍅 **Work** for 25 minutes (1 Pomodoro)\n2. ☕ **Short break** for 5 minutes\n3. After 4 Pomodoros, take a **long break** (15-30 min)\n\n**Why it works:**\n- Creates urgency (timer pressure)\n- Prevents burnout (regular breaks)\n- Builds momentum (streak motivation)\n\nTry it right now in the **Focus Battle** page! 🎯";
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error?.message || `API error (${response.status})`);
     }
 
-    if (q.includes('study') && (q.includes('tip') || q.includes('advice'))) {
-      return "**Top Study Tips for Better Learning:**\n\n1. ⏰ **Active Recall** — Test yourself instead of re-reading\n2. 📅 **Spaced Repetition** — Review material at increasing intervals\n3. 🎯 **Focus Sessions** — Use Pomodoro (25 min focus + 5 min break)\n4. ✍️ **Teach Others** — Explaining concepts deepens understanding\n5. 😴 **Sleep Well** — Memory consolidation happens during sleep\n6. 🏃 **Exercise** — Physical activity boosts cognitive function\n7. 📝 **Take Notes** — Writing by hand improves retention\n\nStart tracking your study time in the **Focus Battle** page!";
+    const data = await response.json();
+    return data.choices?.[0]?.message?.content || 'Sorry, I could not generate a response.';
+  };
+
+  // Render markdown-formatted text
+  const renderMarkdown = (text) => {
+    const lines = text.split('\n');
+    const elements = [];
+    let i = 0;
+
+    while (i < lines.length) {
+      const line = lines[i];
+
+      // Empty line = spacing
+      if (line.trim() === '') {
+        elements.push(<div key={i} style={{ height: 8 }} />);
+        i++;
+        continue;
+      }
+
+      // Headers
+      if (line.startsWith('### ')) {
+        elements.push(<h4 key={i} style={{ margin: '8px 0 4px', fontWeight: 700, fontSize: 14 }}>{formatInline(line.slice(4))}</h4>);
+        i++;
+        continue;
+      }
+      if (line.startsWith('## ')) {
+        elements.push(<h3 key={i} style={{ margin: '10px 0 4px', fontWeight: 700, fontSize: 15 }}>{formatInline(line.slice(3))}</h3>);
+        i++;
+        continue;
+      }
+      if (line.startsWith('# ')) {
+        elements.push(<h2 key={i} style={{ margin: '10px 0 6px', fontWeight: 700, fontSize: 16 }}>{formatInline(line.slice(2))}</h2>);
+        i++;
+        continue;
+      }
+
+      // Code blocks
+      if (line.startsWith('```')) {
+        const lang = line.slice(3).trim();
+        const codeLines = [];
+        i++;
+        while (i < lines.length && !lines[i].startsWith('```')) {
+          codeLines.push(lines[i]);
+          i++;
+        }
+        i++; // skip closing ```
+        elements.push(
+          <pre key={`code-${i}`} style={{
+            background: 'rgba(0,0,0,0.3)', borderRadius: 8, padding: '12px 14px',
+            fontSize: 12, fontFamily: "'Fira Code', 'Consolas', monospace",
+            overflow: 'auto', margin: '6px 0', color: '#e2e8f0',
+            border: '1px solid rgba(255,255,255,0.06)'
+          }}>
+            <code>{codeLines.join('\n')}</code>
+          </pre>
+        );
+        continue;
+      }
+
+      // Numbered list items
+      if (/^\d+\.\s/.test(line)) {
+        elements.push(
+          <div key={i} style={{ paddingLeft: 8, margin: '3px 0', lineHeight: 1.6 }}>
+            {formatInline(line)}
+          </div>
+        );
+        i++;
+        continue;
+      }
+
+      // Bullet list items
+      if (line.startsWith('- ') || line.startsWith('* ')) {
+        elements.push(
+          <div key={i} style={{ paddingLeft: 8, margin: '3px 0', lineHeight: 1.6 }}>
+            {formatInline('• ' + line.slice(2))}
+          </div>
+        );
+        i++;
+        continue;
+      }
+
+      // Regular paragraph
+      elements.push(<p key={i} style={{ margin: '3px 0', lineHeight: 1.6 }}>{formatInline(line)}</p>);
+      i++;
     }
 
-    if (q.includes('focus') || q.includes('concentration') || q.includes('distract')) {
-      return "**How to Improve Focus:**\n\n🔇 **Environment**\n- Find a quiet space\n- Remove phone notifications\n- Use noise-cancelling headphones\n\n🧠 **Mental**\n- Start with a clear intention\n- Break tasks into small chunks\n- Use the 2-minute rule for momentum\n\n⏱️ **Technique**\n- Pomodoro Timer (25/5 pattern)\n- Deep work blocks (90 minutes)\n- \"Do Not Disturb\" scheduling\n\n💪 **Habits**\n- Same time, same place daily\n- Limit caffeine after 2 PM\n- Take walking breaks\n\nTrack your focus in the **Focus Battle** page and earn XP! ⚡";
+    return elements;
+  };
+
+  // Inline markdown formatting (bold, italic, code, links)
+  const formatInline = (text) => {
+    const parts = [];
+    let remaining = text;
+    let key = 0;
+
+    while (remaining.length > 0) {
+      // Bold: **text**
+      const boldMatch = remaining.match(/\*\*(.+?)\*\*/);
+      // Inline code: `text`
+      const codeMatch = remaining.match(/`([^`]+)`/);
+      // Italic: *text*
+      const italicMatch = remaining.match(/(?<!\*)\*([^*]+)\*(?!\*)/);
+
+      // Find earliest match
+      const matches = [
+        boldMatch ? { type: 'bold', match: boldMatch } : null,
+        codeMatch ? { type: 'code', match: codeMatch } : null,
+        italicMatch ? { type: 'italic', match: italicMatch } : null,
+      ].filter(Boolean).sort((a, b) => a.match.index - b.match.index);
+
+      if (matches.length === 0) {
+        parts.push(remaining);
+        break;
+      }
+
+      const first = matches[0];
+      const idx = first.match.index;
+
+      // Add text before the match
+      if (idx > 0) {
+        parts.push(remaining.slice(0, idx));
+      }
+
+      if (first.type === 'bold') {
+        parts.push(<strong key={key++}>{first.match[1]}</strong>);
+        remaining = remaining.slice(idx + first.match[0].length);
+      } else if (first.type === 'code') {
+        parts.push(
+          <code key={key++} style={{
+            background: 'rgba(167, 139, 250, 0.15)', padding: '1px 5px',
+            borderRadius: 4, fontSize: '0.9em', fontFamily: "'Fira Code', monospace"
+          }}>
+            {first.match[1]}
+          </code>
+        );
+        remaining = remaining.slice(idx + first.match[0].length);
+      } else if (first.type === 'italic') {
+        parts.push(<em key={key++}>{first.match[1]}</em>);
+        remaining = remaining.slice(idx + first.match[0].length);
+      }
     }
 
-    if (q.includes('plan') || q.includes('schedule')) {
-      return "**Weekly Study Plan Template:**\n\n📅 **Monday-Friday:**\n- Morning: 2 Pomodoros on hardest subject\n- Afternoon: 2 Pomodoros on secondary subjects\n- Evening: 1 Pomodoro for review + notes\n\n📅 **Saturday:**\n- Active recall and practice tests\n- Review weak areas from the week\n\n📅 **Sunday:**\n- Light review + plan next week\n- Rest and recharge 🔋\n\n**Tips:** Use the **Study Planner** to track tasks and the **Journal** to log learning insights!";
-    }
-
-    if (q.includes('memory') || q.includes('remember') || q.includes('memorize')) {
-      return "**Best Memory Techniques:**\n\n1. 🏠 **Memory Palace** — Associate info with locations you know\n2. 🔗 **Chunking** — Group information into meaningful chunks\n3. 🎨 **Visualization** — Create vivid mental images\n4. 📝 **Cornell Notes** — Structured note-taking with summaries\n5. 🔄 **Spaced Repetition** — Review at optimal intervals\n6. 🎵 **Mnemonics** — Use acronyms, rhymes, or songs\n7. 📖 **Feynman Technique** — Explain concepts simply\n\nUse the **Journal** page to practice active note-taking! 🧠";
-    }
-
-    if (q.includes('burnout') || q.includes('tired') || q.includes('motivation')) {
-      return "**Dealing with Study Burnout:**\n\n🔴 **Signs:** Fatigue, loss of motivation, difficulty concentrating\n\n🟢 **Solutions:**\n1. **Take a real break** — Step completely away from studying\n2. **Exercise** — Even a 15-min walk helps\n3. **Sleep** — Priority #1 for recovery\n4. **Set boundaries** — Don't study 24/7\n5. **Reward yourself** — Celebrate small wins\n6. **Change your environment** — Try a cafe or library\n7. **Lower the bar** — 10 minutes > 0 minutes\n\n💡 **Remember:** Consistency beats intensity. Small daily progress compounds! Check your streak in the **Dashboard** 🔥";
-    }
-
-    // Default response
-    return `Great question! Here are some thoughts:\n\n${query.length > 20 ? "That's an interesting topic." : "I'd love to help with that."} While I'm currently running in offline mode, here are some general tips:\n\n1. **Break it down** — Divide complex problems into smaller pieces\n2. **Use NeuroDesk tools** — Track your progress with Focus Battle, plan with Study Planner\n3. **Stay consistent** — Small daily efforts compound over time\n4. **Take notes** — Use the Journal to capture insights\n\n💡 *Tip: Connect NeuroDesk to an AI API for more detailed, personalized responses!*`;
+    return parts.length === 1 && typeof parts[0] === 'string' ? parts[0] : parts;
   };
 
   const handleKeyDown = (e) => {
@@ -121,7 +296,7 @@ const AIAssistant = ({ addToast }) => {
       <div className="page-header">
         <div>
           <h1 className="page-title">AI Assistant 🤖</h1>
-          <p className="page-subtitle">Your intelligent study companion. Ask anything about learning and productivity.</p>
+          <p className="page-subtitle">Powered by DeepSeek AI — your intelligent study companion.</p>
         </div>
         {messages.length > 0 && (
           <button className="btn-secondary btn-sm" onClick={clearChat}>Clear Chat</button>
@@ -133,7 +308,7 @@ const AIAssistant = ({ addToast }) => {
           <div className="ai-empty-state">
             <div className="empty-icon">🧠</div>
             <h2>How can I help you today?</h2>
-            <p>Ask me anything about studying, productivity, or learning techniques. I'm here to help you succeed!</p>
+            <p>Ask me anything about studying, productivity, any subject, or learning techniques. Powered by DeepSeek AI.</p>
             <div className="ai-suggestions">
               {SUGGESTIONS.map((s, i) => (
                 <button key={i} className="ai-suggestion" onClick={() => sendMessage(s)}>
@@ -150,17 +325,7 @@ const AIAssistant = ({ addToast }) => {
                   {msg.role === 'user' ? initials : '🤖'}
                 </div>
                 <div className="ai-bubble">
-                  {msg.content.split('\n').map((line, j) => (
-                    <React.Fragment key={j}>
-                      {line.startsWith('**') && line.endsWith('**')
-                        ? <strong>{line.replace(/\*\*/g, '')}</strong>
-                        : line.startsWith('- ') || line.startsWith('1.') || line.startsWith('2.') || line.startsWith('3.') || line.startsWith('4.') || line.startsWith('5.') || line.startsWith('6.') || line.startsWith('7.')
-                          ? <div style={{ paddingLeft: 8 }}>{line}</div>
-                          : line
-                      }
-                      {j < msg.content.split('\n').length - 1 && <br />}
-                    </React.Fragment>
-                  ))}
+                  {msg.role === 'assistant' ? renderMarkdown(msg.content) : msg.content}
                 </div>
               </div>
             ))}
@@ -189,7 +354,7 @@ const AIAssistant = ({ addToast }) => {
         <div className="ai-input-area">
           <textarea
             ref={textareaRef}
-            placeholder="Ask me anything about studying, productivity, focus…"
+            placeholder="Ask me anything — studying, any subject, productivity…"
             value={input}
             onChange={handleTextareaInput}
             onKeyDown={handleKeyDown}
