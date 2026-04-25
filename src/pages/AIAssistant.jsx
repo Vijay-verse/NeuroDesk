@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send } from 'lucide-react';
 
-const DEEPSEEK_API_KEY = 'sk-7d47b55e1bc84a069ed23c348e05ab79';
-const DEEPSEEK_API_URL = 'https://api.deepseek.com/chat/completions';
+const GEMINI_API_KEY = 'AIzaSyDpIYvhDBXO66riImm0vnRzfh_inRxVbq4';
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 const SYSTEM_PROMPT = `You are NeuroDesk AI — a premium, intelligent study assistant built into the NeuroDesk productivity platform.
 
@@ -78,11 +78,11 @@ const AIAssistant = ({ addToast }) => {
     if (textareaRef.current) textareaRef.current.style.height = 'auto';
 
     try {
-      const aiResponse = await callDeepSeek(updatedMessages);
+      const aiResponse = await callGemini(updatedMessages);
       const assistantMsg = { role: 'assistant', content: aiResponse, timestamp: Date.now() };
       setMessages(prev => [...prev, assistantMsg]);
     } catch (err) {
-      console.error('DeepSeek API error:', err);
+      console.error('Gemini API error:', err);
       setError(err.message || 'Failed to get response. Please try again.');
       if (addToast) addToast('AI response failed', 'error');
     } finally {
@@ -90,40 +90,41 @@ const AIAssistant = ({ addToast }) => {
     }
   };
 
-  // DeepSeek API call with full conversation history
-  const callDeepSeek = async (conversationMessages) => {
-    // Build messages array for the API — include last 20 messages for context
+  // Gemini API call with full conversation history
+  const callGemini = async (conversationMessages) => {
+    // Build conversation contents for Gemini — include last 20 messages for context
     const recentMessages = conversationMessages.slice(-20);
-    const apiMessages = [
-      { role: 'system', content: SYSTEM_PROMPT },
-      ...recentMessages.map(m => ({
-        role: m.role,
-        content: m.content
-      }))
-    ];
 
-    const response = await fetch(DEEPSEEK_API_URL, {
+    // Gemini uses 'contents' with 'role' (user/model) and 'parts'
+    const contents = recentMessages.map(m => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }]
+    }));
+
+    const response = await fetch(GEMINI_API_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: apiMessages,
-        temperature: 0.7,
-        max_tokens: 1024,
-        stream: false
+        system_instruction: {
+          parts: [{ text: SYSTEM_PROMPT }]
+        },
+        contents,
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 1024,
+          topP: 0.95,
+          topK: 40
+        }
       })
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error?.message || `API error (${response.status})`);
+      throw new Error(errorData.error?.message || `Gemini API error (${response.status})`);
     }
 
     const data = await response.json();
-    return data.choices?.[0]?.message?.content || 'Sorry, I could not generate a response.';
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, I could not generate a response.';
   };
 
   // Render markdown-formatted text
@@ -296,7 +297,7 @@ const AIAssistant = ({ addToast }) => {
       <div className="page-header">
         <div>
           <h1 className="page-title">AI Assistant 🤖</h1>
-          <p className="page-subtitle">Powered by DeepSeek AI — your intelligent study companion.</p>
+          <p className="page-subtitle">Powered by Gemini AI — your intelligent study companion.</p>
         </div>
         {messages.length > 0 && (
           <button className="btn-secondary btn-sm" onClick={clearChat}>Clear Chat</button>
@@ -308,7 +309,7 @@ const AIAssistant = ({ addToast }) => {
           <div className="ai-empty-state">
             <div className="empty-icon">🧠</div>
             <h2>How can I help you today?</h2>
-            <p>Ask me anything about studying, productivity, any subject, or learning techniques. Powered by DeepSeek AI.</p>
+            <p>Ask me anything about studying, productivity, any subject, or learning techniques. Powered by Gemini AI.</p>
             <div className="ai-suggestions">
               {SUGGESTIONS.map((s, i) => (
                 <button key={i} className="ai-suggestion" onClick={() => sendMessage(s)}>
