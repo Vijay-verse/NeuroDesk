@@ -46,7 +46,7 @@ router.get('/stats', async (req, res) => {
   try {
     // Basic aggregation: total seconds and score
     const result = await FocusSession.aggregate([
-      { $match: { userId: require('mongoose').Types.ObjectId(req.userId) } },
+      { $match: { userId: new (require('mongoose').Types.ObjectId)(req.userId) } },
       { 
         $group: {
           _id: null,
@@ -57,6 +57,38 @@ router.get('/stats', async (req, res) => {
     ]);
 
     const stats = result.length > 0 ? result[0] : { totalSeconds: 0, totalScore: 0 };
+
+    // Calculate streak
+    const sessions = await FocusSession.find({ userId: req.userId }).select('date').sort({ date: -1 });
+    let streak = 0;
+    if (sessions.length > 0) {
+      const days = [...new Set(sessions.map(s => {
+        const d = new Date(s.date);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      }))];
+
+      const current = new Date();
+      const currentStr = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2,'0')}-${String(current.getDate()).padStart(2,'0')}`;
+      
+      const yesterday = new Date(current);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2,'0')}-${String(yesterday.getDate()).padStart(2,'0')}`;
+
+      if (days[0] === currentStr || days[0] === yesterdayStr) {
+         let dateObj = new Date(days[0] + 'T00:00:00');
+         for (let i = 0; i < days.length; i++) {
+           const expectedStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2,'0')}-${String(dateObj.getDate()).padStart(2,'0')}`;
+           if (days[i] === expectedStr) {
+             streak++;
+             dateObj.setDate(dateObj.getDate() - 1);
+           } else {
+             break;
+           }
+         }
+      }
+    }
+    stats.streak = streak;
+
     res.json(stats);
   } catch (err) {
     console.error(err.message);

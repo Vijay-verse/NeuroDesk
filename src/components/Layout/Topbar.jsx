@@ -1,8 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Menu, LogOut, User as UserIcon, Flame } from 'lucide-react';
 
 const Topbar = ({ user, logout, toggleSidebar, currentPage }) => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const [streak, setStreak] = useState(0);
+
+  useEffect(() => {
+    const fetchStreak = async () => {
+      try {
+        const token = localStorage.getItem('neurodesk_token');
+        if (!token) return;
+        const res = await fetch('/api/focus/stats', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setStreak(data.streak || 0);
+        }
+      } catch (err) {
+        console.error('Failed to fetch streak');
+      }
+    };
+    fetchStreak();
+  }, []);
 
   const navLabels = {
     dashboard: 'Dashboard',
@@ -29,7 +49,7 @@ const Topbar = ({ user, logout, toggleSidebar, currentPage }) => {
       <div className="topbar-right">
         <div className="topbar-streak">
           <span className="streak-fire">🔥</span>
-          <span className="streak-count">0</span>
+          <span className="streak-count">{streak}</span>
           <span className="streak-label">day streak</span>
         </div>
 
