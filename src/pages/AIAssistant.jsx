@@ -2,7 +2,16 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send } from 'lucide-react';
 
 const GEMINI_API_KEY = 'AIzaSyDN0LjgYix-kG49UVm9yw4NEmdYSCdkeu8';
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+// Fallback chain: try models in order until one works
+const GEMINI_MODELS = [
+  'gemini-1.5-flash',
+  'gemini-2.0-flash-lite',
+  'gemini-2.0-flash',
+];
+
+const buildGeminiUrl = (model) =>
+  `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
 
 const SYSTEM_PROMPT = `You are NeuroDesk AI — a premium, intelligent study assistant built into the NeuroDesk productivity platform.
 
@@ -43,6 +52,28 @@ const SUGGESTIONS = [
   "How to deal with study burnout?",
 ];
 
+// Smart local fallback responses when API is unavailable
+const LOCAL_RESPONSES = {
+  pomodoro: "**The Pomodoro Technique** 🍅\n\n1. **Work** for 25 minutes (1 Pomodoro)\n2. **Short break** for 5 minutes\n3. After 4 Pomodoros, take a **long break** (15-30 min)\n\n**Why it works:**\n- Creates urgency with timer pressure\n- Prevents burnout with regular breaks\n- Builds momentum through streaks\n\nTry it now in **Focus Battle**! 🎯",
+  study: "**Top Study Tips** 📚\n\n1. **Active Recall** — Test yourself instead of re-reading\n2. **Spaced Repetition** — Review at increasing intervals\n3. **Pomodoro** — 25 min focus + 5 min break\n4. **Teach Others** — Explaining deepens understanding\n5. **Sleep Well** — Memory consolidation happens during sleep\n\nTrack your sessions in **Focus Battle** to earn XP! ⚡",
+  focus: "**Improve Your Focus** 🎯\n\n**Environment:** Remove distractions, use \"Do Not Disturb\"\n**Technique:** Pomodoro Timer (25/5 pattern)\n**Habits:** Same time, same place daily\n**Mental:** Start with clear intentions, break tasks into chunks\n\nUse **Focus Battle** to track your sessions and build streaks! 🔥",
+  memory: "**Memory Techniques** 🧠\n\n1. **Memory Palace** — Associate info with locations\n2. **Chunking** — Group info into meaningful chunks\n3. **Spaced Repetition** — Review at optimal intervals\n4. **Feynman Technique** — Explain concepts simply\n5. **Visualization** — Create vivid mental images\n\nCapture insights in the **Journal**! ✍️",
+  burnout: "**Dealing with Burnout** 💪\n\n1. **Take a real break** — Step away completely\n2. **Exercise** — Even a 15-min walk helps\n3. **Sleep** — Priority #1 for recovery\n4. **Lower the bar** — 10 minutes > 0 minutes\n5. **Reward yourself** — Celebrate small wins\n\nConsistency beats intensity. Check your streak on the **Dashboard**! 🔥",
+  plan: "**Weekly Study Plan** 📅\n\n**Mon-Fri:**\n- Morning: 2 Pomodoros on hardest subject\n- Afternoon: 2 Pomodoros on secondary subjects\n- Evening: 1 Pomodoro for review\n\n**Saturday:** Practice tests & weak areas\n**Sunday:** Light review + plan next week\n\nUse the **Study Planner** to track your tasks!",
+  default: "Great question! Here are some tips:\n\n1. **Break it down** — Divide problems into smaller pieces\n2. **Use NeuroDesk** — Track progress with Focus Battle, plan with Study Planner\n3. **Stay consistent** — Small daily efforts compound\n4. **Take notes** — Use the Journal to capture insights\n\n*Note: I'm currently in offline mode. The AI service will resume shortly!* 💡"
+};
+
+const getLocalResponse = (query) => {
+  const q = query.toLowerCase();
+  if (q.includes('pomodoro')) return LOCAL_RESPONSES.pomodoro;
+  if (q.includes('study') || q.includes('tip') || q.includes('exam')) return LOCAL_RESPONSES.study;
+  if (q.includes('focus') || q.includes('concentrat') || q.includes('distract')) return LOCAL_RESPONSES.focus;
+  if (q.includes('memory') || q.includes('remember') || q.includes('memorize')) return LOCAL_RESPONSES.memory;
+  if (q.includes('burnout') || q.includes('tired') || q.includes('motivation')) return LOCAL_RESPONSES.burnout;
+  if (q.includes('plan') || q.includes('schedule')) return LOCAL_RESPONSES.plan;
+  return LOCAL_RESPONSES.default;
+};
+
 const AIAssistant = ({ addToast }) => {
   const [messages, setMessages] = useState(
     JSON.parse(localStorage.getItem('neurodesk_ai_messages') || '[]')
@@ -82,49 +113,65 @@ const AIAssistant = ({ addToast }) => {
       const assistantMsg = { role: 'assistant', content: aiResponse, timestamp: Date.now() };
       setMessages(prev => [...prev, assistantMsg]);
     } catch (err) {
-      console.error('Gemini API error:', err);
-      setError(err.message || 'Failed to get response. Please try again.');
-      if (addToast) addToast('AI response failed', 'error');
+      console.warn('Gemini API unavailable, using local fallback:', err.message);
+      // Fallback to local responses instead of showing error
+      const fallbackResponse = getLocalResponse(content);
+      const assistantMsg = { role: 'assistant', content: fallbackResponse, timestamp: Date.now() };
+      setMessages(prev => [...prev, assistantMsg]);
+      if (addToast) addToast('Using offline mode — AI quota exceeded', 'warning');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Gemini API call with full conversation history
+  // Gemini API call — tries multiple models in fallback chain
   const callGemini = async (conversationMessages) => {
-    // Build conversation contents for Gemini — include last 20 messages for context
     const recentMessages = conversationMessages.slice(-20);
 
-    // Gemini uses 'contents' with 'role' (user/model) and 'parts'
     const contents = recentMessages.map(m => ({
       role: m.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: m.content }]
     }));
 
-    const response = await fetch(GEMINI_API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        system_instruction: {
-          parts: [{ text: SYSTEM_PROMPT }]
-        },
-        contents,
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 1024,
-          topP: 0.95,
-          topK: 40
-        }
-      })
+    const requestBody = JSON.stringify({
+      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      contents,
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 1024,
+        topP: 0.95,
+        topK: 40
+      }
     });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error?.message || `Gemini API error (${response.status})`);
+    // Try each model in the fallback chain
+    let lastError = null;
+    for (const model of GEMINI_MODELS) {
+      try {
+        const response = await fetch(buildGeminiUrl(model), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: requestBody
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) return text;
+        }
+
+        // If quota/rate error, try next model
+        const errData = await response.json().catch(() => ({}));
+        lastError = errData.error?.message || `${model}: HTTP ${response.status}`;
+        console.warn(`Gemini ${model} failed:`, lastError);
+        continue;
+      } catch (e) {
+        lastError = e.message;
+        continue;
+      }
     }
 
-    const data = await response.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, I could not generate a response.';
+    throw new Error(lastError || 'All Gemini models unavailable');
   };
 
   // Render markdown-formatted text
@@ -162,7 +209,6 @@ const AIAssistant = ({ addToast }) => {
 
       // Code blocks
       if (line.startsWith('```')) {
-        const lang = line.slice(3).trim();
         const codeLines = [];
         i++;
         while (i < lines.length && !lines[i].startsWith('```')) {
@@ -213,21 +259,17 @@ const AIAssistant = ({ addToast }) => {
     return elements;
   };
 
-  // Inline markdown formatting (bold, italic, code, links)
+  // Inline markdown formatting (bold, italic, code)
   const formatInline = (text) => {
     const parts = [];
     let remaining = text;
     let key = 0;
 
     while (remaining.length > 0) {
-      // Bold: **text**
       const boldMatch = remaining.match(/\*\*(.+?)\*\*/);
-      // Inline code: `text`
       const codeMatch = remaining.match(/`([^`]+)`/);
-      // Italic: *text*
       const italicMatch = remaining.match(/(?<!\*)\*([^*]+)\*(?!\*)/);
 
-      // Find earliest match
       const matches = [
         boldMatch ? { type: 'bold', match: boldMatch } : null,
         codeMatch ? { type: 'code', match: codeMatch } : null,
@@ -242,7 +284,6 @@ const AIAssistant = ({ addToast }) => {
       const first = matches[0];
       const idx = first.match.index;
 
-      // Add text before the match
       if (idx > 0) {
         parts.push(remaining.slice(0, idx));
       }
@@ -278,7 +319,6 @@ const AIAssistant = ({ addToast }) => {
 
   const handleTextareaInput = (e) => {
     setInput(e.target.value);
-    // Auto-resize
     e.target.style.height = 'auto';
     e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
   };
